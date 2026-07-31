@@ -98,6 +98,18 @@ Claude Code（Sonnet 5）
 
 一句話：這題的重點不是重構技巧本身（Extract Method誰都會），是「先出計畫、我確認、再動手」這個順序本身把review成本壓到最低。
 
+### 第二階段 — 自建 MCP Server（活動2）
+
+練習 3 — before/after 對照（2026-07-31）
+
+問題：「哪些商品庫存低於5？」
+
+- **Before**（`orderhub` MCP 關閉）：我自己組 T-SQL，用 `sqlcmd -S localhost -d OrderHubTraining -E -C -Q "SELECT Sku, Name, StockQuantity FROM Products WHERE StockQuantity < 5 AND IsActive = 1 ORDER BY StockQuantity ASC;"` 直接查資料庫——連線字串（`localhost`/`OrderHubTraining`）要自己記得，還踩到終端機編碼問題，中文商品名全變亂碼，得回頭比對稍早 Playwright 抓到的商品清單才能還原正確名稱。
+- **After**（`orderhub` MCP 開啟）：一次呼叫 `low_stock(threshold=5)`，直接拿到乾淨 JSON，中文正常顯示，不用碰連線字串也不用處理編碼。
+- 兩次結果完全一致：SKU-1048（晨光 行動電源，庫存2）、SKU-1005（極光 筆電支架，3）、SKU-1023（雲峰 27吋螢幕，3）、SKU-1014（星河 USB-C 集線器，4）、SKU-1032（曜石 機械鍵盤，4）。
+
+心得：MCP 省下來的不是「查得到查不到」，是「怎麼查」這段路——連線字串、SQL 語法、編碼問題全部被包進工具的 description 和 JSON serializer 裡，agent 不用每次重新發明一次查詢邏輯。
+
 ---
 
 ## 附錄：值得留下的對話片段
